@@ -21,6 +21,19 @@ var sop = function(ee) {
     return this;
   };
 
+  this.integrate = function(callback) {
+    var newstream = new events.EventEmitter();
+    stream.on(event, function(data) {
+      newstream.emit(event, data);
+    });
+    callback(newstream); // Get new emitters
+    stream.on('end', function(data) {
+      newstream.emit('end');
+    });
+
+    return (new sob(newstream));
+  };
+
   this.collect = function(targetevent) {
      var e = targetevent || event;
      var collected = '';
@@ -109,6 +122,30 @@ var sop = function(ee) {
     stream.on('end', function() {
       newstream.emit('end');
     });
+    return (new sop(newstream));
+  }
+
+  this.only = function(field) {
+    var newstream = new events.EventEmitter();
+    stream.on('data', function(data) {
+      if (data && data[field]) {
+       newstream.emit('data', data[field]);
+      }
+    });
+    stream.on('end', function() {
+      newstream.emit('end');
+    });
+    return (new sop(newstream));
+  };
+
+  this.log = function() {
+    stream.on('data',function(data) {
+      console.log('data: ' + JSON.stringify(data));
+    });
+    stream.on('end', function() {
+      console.log('end');
+    });
+    return this;
   }
 
   this.result = function() {
