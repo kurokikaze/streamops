@@ -1,5 +1,6 @@
 var sop = require('./streamops'),
-    events = require('events');
+    events = require('events'),
+    http = require('http');
 
 var tester = new events.EventEmitter();
 console.log('Starting test');
@@ -28,3 +29,18 @@ tester.emit('data', 'string2;');
 tester.emit('data', 'string3;');
 
 tester.emit('end');
+
+var options = {
+  'host': 'google.com',
+  'port': 80,
+  'path': '/intl/ru/about.html',
+  'method': 'GET'
+};
+var call = http.request(options, function(res) {
+  console.log('Status code:' + res.statusCode);
+  console.log('Expected content length:' + res.headers['content-length']);
+    sop.sop(res).collect().result().on('data', function(answer) {
+    console.log('Got answer:' + answer.length);
+  });
+});
+call.end();

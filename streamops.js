@@ -3,8 +3,10 @@ var events = require('events');
 var sop = function(ee) {
   if (ee instanceof events.EventEmitter) {
      var stream = ee;
+//     console.log('Using existing stream');
   } else {
      var stream = new events.EventEmitter;
+//     console.log('Using new stream');
   }
   var event = "data";
 //  var stream = ee | new events.EventEmitter;
@@ -19,17 +21,18 @@ var sop = function(ee) {
     return this;
   };
 
-  this.collect = function(event) {
+  this.collect = function(targetevent) {
+     var e = targetevent || event;
      var collected = '';
-//     console.log('starting collection with event ' + event);
+//     console.log('starting collection with event ' + e);
      var newstream = new events.EventEmitter();
-     stream.on(event, function(chunk) {
+     stream.on(e, function(chunk) {
        collected += chunk;
 //       console.log('chunk collected');
      });
      stream.on('end', function() {
 //       console.log('finished collecting');
-       newstream.emit(event, collected);
+       newstream.emit(e, collected);
        newstream.emit('end');
      });
      return (new sop(newstream));
@@ -111,6 +114,7 @@ var sop = function(ee) {
   this.result = function() {
     return stream;
   };
+  return this;
 };
 
 exports.sop = sop;
